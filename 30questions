@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>KI und Prompt Engineering Quiz</title>
+  <style>
+    body { font-family: Arial, sans-serif; padding: 20px; background-color: #f4f4f4; }
+    .quiz-container { max-width: 800px; margin: auto; background: #fff; padding: 20px; border-radius: 10px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+    .question { font-weight: bold; margin-bottom: 10px; }
+    .answers { list-style-type: none; padding: 0; }
+    .answers li { margin-bottom: 10px; }
+    .btn { display: inline-block; margin-top: 10px; padding: 10px 15px; border: none; background: #007BFF; color: #fff; border-radius: 5px; cursor: pointer; }
+    .btn:hover { background: #0056b3; }
+    .correct { background-color: #c8e6c9 !important; }
+    .incorrect { background-color: #ffcdd2 !important; }
+    .progress { margin-top: 20px; }
+    .hidden { display: none; }
+  </style>
+</head>
+<body>
+  <div class="quiz-container">
+    <h1>KI und Prompt Engineering in der Praxis</h1>
+    <p>Dieses Quiz versucht, ein breites Spektrum der wichtigen und prüfungsrelevanten Punkte abzudecken.</p>
+
+    <div id="quiz"></div>
+    <div class="progress">
+      <p id="progress-text">Frage 1 von 30</p>
+      <progress id="progress-bar" value="1" max="30"></progress>
+    </div>
+    <button id="next-btn" class="btn">Nächste Frage</button>
+    <div id="result" class="hidden">
+      <h2>Ergebnis</h2>
+      <p id="score"></p>
+    </div>
+  </div>
+
+  <script>
+    const quizData = [
+      { question: "Was ist laut der Definition des ISO IIC Joint Technical Komitees künstliche Intelligenz (KI)?", options: ["Die Fähigkeit von Maschinen, komplexe Berechnungen durchzuführen.", "Ein System, das ausschließlich menschliche Kreativität nachbildet.", "Ein Teilgebiet der Informatik, das sich darauf konzentriert, Maschinen die Fähigkeit zur intelligenten Interaktion mit ihrer Umgebung zu verleihen, einschließlich Wahrnehmung, Informationsverarbeitung, Sprachverständnis und Problemlösung.", "Ein Synonym für maschinelles Lernen."], answer: 2 },
+      { question: "Was ist ein Large Language Model (LLM)?", options: ["Ein Modell zur Übersetzung von Programmiersprachen.", "Ein neuronales Netzwerk, das mit sehr vielen Textdaten trainiert wurde, um natürliche Sprache zu verstehen und zu generieren.", "Ein großes Datenbankmodell für Sprachdaten.", "Ein Analysewerkzeug für Big Data."], answer: 1 },
+      { question: "Was versteht man unter Prompt Engineering?", options: ["Das Programmieren von KI-Systemen mit neuronalen Netzwerken.", "Die Strukturierung und Formulierung von Texteingaben, um gewünschte KI-Antworten zu erhalten.", "Die technische Wartung von Sprachmodellen.", "Die Erstellung von Software zur Analyse von Prompts."], answer: 1 },
+      { question: "Welche Methode gehört NICHT zu den gängigen Prompting-Strategien?", options: ["Zero-shot prompting", "Few-shot prompting", "Many-shot prompting", "Chain-of-thought prompting"], answer: 2 },
+      { question: "Was ist das Ziel von Few-shot Prompting?", options: ["Die KI mit möglichst vielen Beispielen zu überfordern.", "Dem Modell mit wenigen Beispielen ein Muster zu zeigen, um bessere Antworten zu generieren.", "Die Modellgröße zu reduzieren.", "Prompts automatisch generieren zu lassen."], answer: 1 },
+      { question: "Was verbessert Chain-of-thought Prompting?", options: ["Die logische Schlussfolgerung und komplexe Problemlösungen.", "Die Geschwindigkeit der Antwortgenerierung.", "Die Übersetzungsqualität von Texten.", "Die grafische Darstellung von Informationen."], answer: 0 },
+      { question: "Was versteht man unter Halluzinationen bei LLMs?", options: ["Wenn das Modell in Bilder träumt.", "Wenn das Modell reale Informationen sehr präzise wiedergibt.", "Wenn das Modell falsche, aber überzeugend klingende Informationen generiert.", "Ein Zustand des Modells bei Überforderung."], answer: 2 },
+      { question: "Wie kann man Halluzinationen bei LLMs reduzieren?", options: ["Durch Temperature auf 2 setzen.", "Indem man das Modell absichtlich verwirrt.", "Durch gute Prompts, Validierung der Quellen und externe Tools zur Faktenprüfung.", "Durch Begrenzung des Modells auf 50 Tokens."], answer: 2 },
+      { question: "Was bedeutet Temperatur in LLMs?", options: ["Die Prozessorwärme beim Berechnen.", "Ein Parameter zur Steuerung der Kreativität der Antwort.", "Die Trainingszeit des Modells.", "Der Speicherverbrauch während der Laufzeit."], answer: 1 },
+      { question: "Was bewirkt ein niedriger Temperaturwert (z. B. 0.2)?", options: ["Mehr Zufälligkeit.", "Kürzere Antworten.", "Konsistentere und deterministischere Antworten.", "Längere Rechenzeit."], answer: 2 },
+      { question: "Welcher Prompt ist am besten für eine strukturierte Liste von Informationen geeignet?", options: ["Erzähl mir etwas über Hunde.", "Liste fünf Merkmale von Hunden stichpunktartig auf.", "Warum mögen Menschen Hunde?", "Was ist ein Hund?"], answer: 1 },
+      { question: "Wofür steht RAG in Bezug auf LLMs?", options: ["Random Answer Generator", "Retrieval-Augmented Generation", "Rapid AI Generator", "Robotic AI Guidance"], answer: 1 },
+      { question: "Was bewirkt Retrieval-Augmented Generation (RAG)?", options: ["Ermöglicht LLMs Zugriff auf externe Datenquellen zur besseren Antwortgenerierung.", "Verhindert, dass Modelle jemals falsche Aussagen machen.", "Reduziert die Rechenzeit drastisch.", "Erhöht die Tokens eines Modells unbegrenzt."], answer: 0 },
+      { question: "Was bedeutet Zero-shot Prompting?", options: ["Ein Prompt ohne Beispiele.", "Ein Prompt mit unendlich vielen Beispielen.", "Ein Prompt für Rechenaufgaben.", "Ein Prompt mit sehr hoher Temperatur."], answer: 0 },
+      { question: "Wozu dient das Prompt-Attribut 'Rolle'?", options: ["Um dem Modell eine Identität oder Perspektive zu geben.", "Um die Schriftart im Chat zu ändern.", "Um die Antwortlänge zu steuern.", "Um andere Nutzer zu identifizieren."], answer: 0 },
+      { question: "Was ist der Unterschied zwischen Training und Inferenz bei LLMs?", options: ["Training ist der Einsatz, Inferenz ist das Lernen.", "Training ist die Nutzung, Inferenz die Optimierung.", "Training ist das Lernen aus Daten, Inferenz ist die Anwendung auf neue Prompts.", "Beides bedeutet dasselbe."], answer: 2 },
+      { question: "Was ist ein Token bei LLMs?", options: ["Ein Bildpunkt.", "Eine Speichereinheit.", "Ein Sinnabschnitt wie ein Wort oder Wortteil.", "Ein neuronaler Knoten."], answer: 2 },
+      { question: "Was ist ein gutes Beispiel für einen präzisen Prompt?", options: ["Schreibe mir ein Gedicht.", "Erzähl mir etwas.", "Nenne mir drei Gründe, warum Bäume wichtig für das Klima sind.", "Hallo!"], answer: 2 },
+      { question: "Warum sind strukturierte Prompts besser als vage Fragen?", options: ["Sie verbrauchen weniger Tokens.", "Sie liefern meist bessere und zielgerichtetere Antworten.", "Sie benötigen keine KI.", "Sie sind schwerer zu verstehen."], answer: 1 },
+      { question: "Was ist der Vorteil von Prompt Templates?", options: ["Sie machen Prompts hübscher.", "Sie ermöglichen wiederverwendbare und konsistente Prompts für ähnliche Aufgaben.", "Sie erhöhen die Temperatur automatisch.", "Sie verhindern Halluzinationen."], answer: 1 },
+      { question: "Was bedeutet Few-shot bei Prompt Engineering?", options: ["Man gibt wenige Prompts ein.", "Man zeigt der KI mit wenigen Beispielen, was gewünscht ist.", "Man fragt die KI selten.", "Man nutzt einfache Fragen."], answer: 1 },
+      { question: "Was ist ein Nachteil von Chain-of-thought Prompting?", options: ["Es erzeugt unverständliche Antworten.", "Es ist zu schnell.", "Es kann zu langen und langsamen Antworten führen.", "Es verhindert das Denken der KI."], answer: 2 },
+      { question: "Welche Antwort ist korrekt?", options: ["LLMs lernen beim Chatten dazu.", "LLMs ändern sich ständig durch Nutzerinteraktion.", "LLMs behalten keine Informationen aus vorherigen Konversationen bei normaler Nutzung.", "LLMs benötigen keinen Strom."], answer: 2 },
+      { question: "Was ist eine gute Methode, um ein LLM zu testen?", options: ["Es zu beleidigen.", "Ihm irrelevante Fragen stellen.", "Mit verschiedenen Prompts experimentieren und die Ergebnisse vergleichen.", "Es zu ignorieren."], answer: 2 },
+      { question: "Warum ist Kontext wichtig für Prompts?", options: ["Weil Modelle ohne Kontext keine Antworten generieren können.", "Weil Kontext die Rechenzeit erhöht.", "Weil Kontext die Genauigkeit und Relevanz der Antwort verbessert.", "Weil Kontext unwichtig ist."], answer: 2 },
+      { question: "Was bewirkt ein zu offener Prompt?", options: ["Sehr zielgerichtete Antworten.", "Unvorhersehbare oder ungenaue Ergebnisse.", "Immer dieselbe Antwort.", "Fehlermeldungen im Modell."], answer: 1 },
+      { question: "Wie kann man die Kreativität einer Antwort erhöhen?", options: ["Die Temperatur erhöhen.", "Die Tokenanzahl verringern.", "Den Prompt auf Englisch schreiben.", "Das Modell wechseln."], answer: 0 },
+      { question: "Was ist ein Vorteil von KI-gestütztem Brainstorming?", options: ["Es ersetzt Menschen vollständig.", "Es liefert schnell vielfältige Ideen.", "Es begrenzt die Kreativität.", "Es ist nur für Experten nutzbar."], answer: 1 },
+      { question: "Wie kann man ein LLM zur Reflexion anregen?", options: ["Indem man es auffordert, seine Antwort zu begründen oder Alternativen zu bewerten.", "Indem man es beschimpft.", "Indem man die Temperatur auf 0 setzt.", "Indem man es ohne Prompt laufen lässt."], answer: 0 }
+    ];
+
+    let currentQuestion = 0;
+    let score = 0;
+
+    const quiz = document.getElementById('quiz');
+    const nextBtn = document.getElementById('next-btn');
+    const progressText = document.getElementById('progress-text');
+    const progressBar = document.getElementById('progress-bar');
+    const resultContainer = document.getElementById('result');
+    const scoreText = document.getElementById('score');
+
+    function showQuestion(index) {
+      const q = quizData[index];
+      quiz.innerHTML = `
+        <div class="question">${index + 1}. ${q.question}</div>
+        <ul class="answers">
+          ${q.options.map((opt, i) => `<li><button class="btn answer-btn" data-index="${i}">${opt}</button></li>`).join('')}
+        </ul>
+      `;
+      progressText.textContent = `Frage ${index + 1} von ${quizData.length}`;
+      progressBar.value = index + 1;
+      attachListeners();
+    }
+
+    function attachListeners() {
+      document.querySelectorAll('.answer-btn').forEach(btn => {
+        btn.addEventListener('click', function () {
+          const selectedIndex = parseInt(this.dataset.index);
+          const correctIndex = quizData[currentQuestion].answer;
+
+          document.querySelectorAll('.answer-btn').forEach(button => {
+            button.disabled = true;
+            if (parseInt(button.dataset.index) === correctIndex) {
+              button.classList.add('correct');
+            } else if (parseInt(button.dataset.index) === selectedIndex) {
+              button.classList.add('incorrect');
+            }
+          });
+
+          if (selectedIndex === correctIndex) score++;
+        });
+      });
+    }
+
+    nextBtn.addEventListener('click', () => {
+      if (currentQuestion < quizData.length - 1) {
+        currentQuestion++;
+        showQuestion(currentQuestion);
+      } else {
+        showResult();
+      }
+    });
+
+    function showResult() {
+      quiz.innerHTML = '';
+      resultContainer.classList.remove('hidden');
+      const percent = Math.round((score / quizData.length) * 100);
+      scoreText.textContent = `Du hast ${score} von ${quizData.length} Fragen richtig beantwortet (${percent}%).`;
+      progressText.textContent = "Quiz abgeschlossen";
+      nextBtn.disabled = true;
+    }
+
+    showQuestion(currentQuestion);
+  </script>
+</body>
+</html>
